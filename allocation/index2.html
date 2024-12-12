@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room/Lab Scheduling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .block {
+            color: #fff;
+            font-weight: bold;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+        }
+        .modal.active {
+            display: block;
+        }
+        .modal input,
+        .modal select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        .modal button {
+            margin-top: 10px;
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Room/Lab Scheduling</h1>
+    
+    <button id="searchButton">Search Availability</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Table rows generated dynamically -->
+        </tbody>
+    </table>
+
+    <!-- Search Availability Modal -->
+    <div id="searchModal" class="modal">
+        <h3>Search Availability</h3>
+        <label for="hours">Number of Hours:</label>
+        <input type="number" id="hours" min="1" max="12">
+        <label for="meetings">Meetings per Week:</label>
+        <input type="number" id="meetings" min="1" max="6">
+        <button id="searchAvailability">Search</button>
+        <button id="closeSearchModal">Close</button>
+    </div>
+
+    <!-- Confirm Availability Modal -->
+    <div id="confirmModal" class="modal">
+        <h3>Available Slots</h3>
+        <div id="availableSlots"></div>
+        <button id="confirmSchedule">Yes, Schedule</button>
+        <button id="closeConfirmModal">No</button>
+    </div>
+
+    <!-- Schedule Input Modal -->
+    <div id="scheduleModal" class="modal">
+        <h3>Schedule Details</h3>
+        <input type="text" id="subjectCode" placeholder="Subject Code">
+        <input type="text" id="subjectName" placeholder="Subject Name">
+        <input type="text" id="professorName" placeholder="Professor Name">
+        <input type="text" id="course" placeholder="Course">
+        <input type="text" id="yearLevel" placeholder="Year Level">
+        <input type="text" id="block" placeholder="Block">
+        <label for="color">Color:</label>
+        <input type="color" id="color">
+        <button id="saveSchedule">Save</button>
+        <button id="closeScheduleModal">Close</button>
+    </div>
+
+    <script>
+        function generateTimeRows(startHour, endHour, intervalMinutes) {
+            const tbody = document.querySelector('tbody');
+            const startTime = new Date(0, 0, 0, startHour, 0);
+            const endTime = new Date(0, 0, 0, Math.floor(endHour), (endHour % 1) * 60);
+
+            while (startTime < endTime) {
+                const timeStr = startTime.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                const row = document.createElement('tr');
+
+                const timeCell = document.createElement('td');
+                timeCell.textContent = timeStr;
+                row.appendChild(timeCell);
+
+                for (let i = 0; i < 6; i++) {
+                    const cell = document.createElement('td');
+                    cell.dataset.time = timeStr;
+                    cell.dataset.day = i + 1;
+                    row.appendChild(cell);
+                }
+
+                tbody.appendChild(row);
+
+                startTime.setMinutes(startTime.getMinutes() + intervalMinutes);
+            }
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function searchAvailability() {
+            const hours = parseInt(document.getElementById('hours').value, 10);
+            const meetings = parseInt(document.getElementById('meetings').value, 10);
+
+            if (!hours || !meetings) {
+                alert('Please enter valid hours and meetings.');
+                return;
+            }
+
+            // Mock data for availability (replace with real search logic)
+            const availableSlots = [
+                { day: 'Monday', time: '7:00 AM - 9:00 AM' },
+                { day: 'Thursday', time: '7:00 AM - 9:00 AM' }
+            ];
+
+            const slotsDiv = document.getElementById('availableSlots');
+            slotsDiv.innerHTML = '';
+            availableSlots.forEach(slot => {
+                const p = document.createElement('p');
+                p.textContent = `${slot.day}: ${slot.time}`;
+                slotsDiv.appendChild(p);
+            });
+
+            closeModal('searchModal');
+            showModal('confirmModal');
+        }
+
+        function saveSchedule() {
+            const subjectCode = document.getElementById('subjectCode').value;
+            const subjectName = document.getElementById('subjectName').value;
+            const professorName = document.getElementById('professorName').value;
+            const course = document.getElementById('course').value;
+            const yearLevel = document.getElementById('yearLevel').value;
+            const block = document.getElementById('block').value;
+            const color = document.getElementById('color').value;
+
+            if (!subjectCode || !subjectName || !professorName || !course || !yearLevel || !block) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            // Save logic here (e.g., send to server and update UI)
+            alert('Schedule saved successfully!');
+            closeModal('scheduleModal');
+        }
+
+        // Event Listeners
+        document.getElementById('searchButton').addEventListener('click', () => showModal('searchModal'));
+        document.getElementById('closeSearchModal').addEventListener('click', () => closeModal('searchModal'));
+        document.getElementById('searchAvailability').addEventListener('click', searchAvailability);
+        document.getElementById('confirmSchedule').addEventListener('click', () => {
+            closeModal('confirmModal');
+            showModal('scheduleModal');
+        });
+        document.getElementById('closeConfirmModal').addEventListener('click', () => closeModal('confirmModal'));
+        document.getElementById('saveSchedule').addEventListener('click', saveSchedule);
+        document.getElementById('closeScheduleModal').addEventListener('click', () => closeModal('scheduleModal'));
+
+        // Initialize Table
+        window.onload = function() {
+            generateTimeRows(7, 20.5, 5); // 7:00 AM to 8:30 PM, 5-minute intervals
+        };
+    </script>
+</body>
+</html>
